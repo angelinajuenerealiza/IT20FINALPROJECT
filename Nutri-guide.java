@@ -426,3 +426,132 @@ class PlannerGUI extends JFrame {
     }
 }
 
+/* =============================================================
+                    DSA MODULE — SORTING / SEARCHING / CLASSIFY
+   ============================================================= */
+class DSAModuleGUI extends JFrame {
+
+    PlannerLogic logic;
+    DefaultTableModel tableModel;
+    JTable table;
+
+    public DSAModuleGUI(PlannerLogic logic) {
+        this.logic = logic;
+
+        setTitle("DSA Module — Sorting, Searching & Classification");
+        setSize(800, 600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        setLayout(new BorderLayout(10, 10));
+
+        /* TABLE */
+        tableModel = new DefaultTableModel(new String[]{"Food", "Calories", "Category"}, 0);
+        table = new JTable(tableModel);
+        refreshTable();
+
+        add(new JScrollPane(table), BorderLayout.CENTER);
+
+        /* BUTTONS */
+        JPanel btnPanel = new JPanel();
+
+        JButton sortAsc = new JButton("Sort Calories (Ascending)");
+        JButton sortDesc = new JButton("Sort Calories (Descending)");
+        JButton searchBtn = new JButton("Search Food");
+        JButton classifyBtn = new JButton("Classify All Foods");
+
+        btnPanel.add(sortAsc);
+        btnPanel.add(sortDesc);
+        btnPanel.add(searchBtn);
+        btnPanel.add(classifyBtn);
+
+        add(btnPanel, BorderLayout.SOUTH);
+
+        /* LISTENERS */
+
+        sortAsc.addActionListener(e -> {
+            sortAscending();
+            refreshTable();
+        });
+
+        sortDesc.addActionListener(e -> {
+            sortDescending();
+            refreshTable();
+        });
+
+        searchBtn.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(this, "Search by name:");
+            if (name != null) {
+                int index = linearSearch(name.toLowerCase());
+                if (index == -1)
+                    JOptionPane.showMessageDialog(this, "Food not found.");
+                else
+                    JOptionPane.showMessageDialog(this, "Found at index: " + index);
+            }
+        });
+
+        classifyBtn.addActionListener(e -> {
+            classifyFoods();
+            refreshTable();
+        });
+    }
+
+    /* =============================================================
+            TABLE UPDATE BASED ON FOOD LIBRARY
+       ============================================================= */
+    private void refreshTable() {
+        tableModel.setRowCount(0);
+
+        for (FoodItem f : logic.getFoodLibrary()) {
+            tableModel.addRow(new Object[]{
+                    f.name,
+                    f.calories,
+                    classifySingle(f.calories)
+            });
+        }
+    }
+
+
+    /* =============================================================
+                        SORTING ALGORITHMS
+       ============================================================= */
+
+    private void sortAscending() {
+        logic.foodLibrary.sort(Comparator.comparingDouble(f -> f.calories));
+    }
+
+    private void sortDescending() {
+        logic.foodLibrary.sort((a, b) -> Double.compare(b.calories, a.calories));
+    }
+
+
+    /* =============================================================
+                        SEARCH ALGORITHM
+       ============================================================= */
+
+    private int linearSearch(String name) {
+        for (int i = 0; i < logic.foodLibrary.size(); i++) {
+            if (logic.foodLibrary.get(i).name.toLowerCase().equals(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
+    /* =============================================================
+                       CLASSIFICATION ALGORITHM
+       ============================================================= */
+
+    private void classifyFoods() {
+        for (FoodItem f : logic.foodLibrary) {
+            // nothing needed — classification is computed in refreshTable()
+        }
+    }
+
+    private String classifySingle(double calories) {
+        if (calories < 100) return "Low Calorie";
+        if (calories <= 200) return "Medium Calorie";
+        return "High Calorie";
+    }
+}
