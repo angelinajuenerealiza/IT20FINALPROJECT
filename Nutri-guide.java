@@ -282,3 +282,147 @@ class PlannerLogic {
         return foodLibrary;
     }
 }
+
+/* =============================================================
+                     MEAL & NUTRITION PLANNER GUI
+   ============================================================= */
+class PlannerGUI extends JFrame {
+
+    PlannerLogic logic;
+    DefaultTableModel foodModel, mealModel;
+    JTable foodTable, mealTable;
+    JLabel totalCaloriesLabel;
+
+    public PlannerGUI(PlannerLogic logic) {
+        this.logic = logic;
+
+        setTitle("NutriGuide — Meal & Nutrition Planner");
+        setSize(900, 600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        setLayout(new BorderLayout(10, 10));
+
+        totalCaloriesLabel = new JLabel("Total Calories: 0", SwingConstants.CENTER);
+        totalCaloriesLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        add(totalCaloriesLabel, BorderLayout.NORTH);
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        split.setResizeWeight(0.5);
+
+        /* LEFT PANEL — FOOD LIBRARY */
+        JPanel left = new JPanel(new BorderLayout());
+
+        foodModel = new DefaultTableModel(new String[]{"Food", "Calories"}, 0);
+        foodTable = new JTable(foodModel);
+        refreshFoodTable();
+
+        left.setBorder(BorderFactory.createTitledBorder("Food Library"));
+        left.add(new JScrollPane(foodTable), BorderLayout.CENTER);
+
+        JButton addBtn = new JButton("Add to Meal");
+        JButton addCustomBtn = new JButton("Add Custom Food");
+        JPanel leftBtns = new JPanel();
+        leftBtns.add(addBtn);
+        leftBtns.add(addCustomBtn);
+        left.add(leftBtns, BorderLayout.SOUTH);
+
+        /* RIGHT PANEL — MEAL PLAN */
+        JPanel right = new JPanel(new BorderLayout());
+
+        mealModel = new DefaultTableModel(new String[]{"Food", "Calories"}, 0);
+        mealTable = new JTable(mealModel);
+
+        right.setBorder(BorderFactory.createTitledBorder("Today's Meal Plan"));
+        right.add(new JScrollPane(mealTable), BorderLayout.CENTER);
+
+        JButton removeBtn = new JButton("Remove");
+        JButton clearBtn = new JButton("Clear");
+        JPanel rightBtns = new JPanel();
+        rightBtns.add(removeBtn);
+        rightBtns.add(clearBtn);
+        right.add(rightBtns, BorderLayout.SOUTH);
+
+        /* Add to Split Pane */
+        split.setLeftComponent(left);
+        split.setRightComponent(right);
+
+        add(split, BorderLayout.CENTER);
+
+        /* BUTTON LISTENERS */
+
+        addBtn.addActionListener(e -> addSelectedFoodToMeal());
+
+        addCustomBtn.addActionListener(e -> {
+            JTextField fname = new JTextField();
+            JTextField cal = new JTextField();
+
+            JPanel p = new JPanel(new GridLayout(0, 2));
+            p.add(new JLabel("Food Name:"));
+            p.add(fname);
+            p.add(new JLabel("Calories:"));
+            p.add(cal);
+
+            if (JOptionPane.showConfirmDialog(this, p, "Add Custom Food",
+                    JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+
+                try {
+                    String n = fname.getText();
+                    double c = Double.parseDouble(cal.getText());
+
+                    logic.addCustomFood(n, c);
+                    refreshFoodTable();
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Invalid input.");
+                }
+            }
+        });
+
+        removeBtn.addActionListener(e -> removeMealItem());
+        clearBtn.addActionListener(e -> clearMeal());
+    }
+
+    private void refreshFoodTable() {
+        foodModel.setRowCount(0);
+        for (FoodItem f : logic.getFoodLibrary()) {
+            foodModel.addRow(new Object[]{f.name, f.calories});
+        }
+    }
+
+    private void addSelectedFoodToMeal() {
+        int row = foodTable.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Select a food first.");
+            return;
+        }
+
+        String name = (String) foodModel.getValueAt(row, 0);
+        double cal = (Double) foodModel.getValueAt(row, 1);
+
+        mealModel.addRow(new Object[]{name, cal});
+        updateTotalCalories();
+    }
+
+    private void removeMealItem() {
+        int row = mealTable.getSelectedRow();
+        if (row == -1) return;
+
+        mealModel.removeRow(row);
+        updateTotalCalories();
+    }
+
+    private void clearMeal() {
+        mealModel.setRowCount(0);
+        updateTotalCalories();
+    }
+
+    private void updateTotalCalories() {
+        double total = 0;
+        for (int i = 0; i < mealModel.getRowCount(); i++) {
+            total += (double) mealModel.getValueAt(i, 1);
+        }
+        totalCaloriesLabel.setText("Total Calories: " + total);
+    }
+}
+
