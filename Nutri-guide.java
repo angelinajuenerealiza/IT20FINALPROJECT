@@ -92,3 +92,68 @@ class LoginGUI extends JFrame {
     }
 }
 
+class SignupGUI extends JFrame {
+
+    JTextField usernameField;
+    JPasswordField passwordField;
+
+    public SignupGUI() {
+        setTitle("NutriGuide — Create Account");
+        setSize(300, 200);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout(10,10));
+
+        JPanel panel = new JPanel(new GridLayout(0,2,10,10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+
+        JLabel lbl1 = new JLabel("Create Username:");
+        JLabel lbl2 = new JLabel("Create Password:");
+
+        usernameField = new JTextField();
+        passwordField = new JPasswordField();
+
+        panel.add(lbl1); panel.add(usernameField);
+        panel.add(lbl2); panel.add(passwordField);
+
+        JButton registerBtn = new JButton("Register");
+        JButton backBtn = new JButton("Back");
+
+        JPanel bottom = new JPanel();
+        bottom.add(registerBtn);
+        bottom.add(backBtn);
+
+        add(panel, BorderLayout.CENTER);
+        add(bottom, BorderLayout.SOUTH);
+
+        registerBtn.addActionListener(e -> handleSignup());
+        backBtn.addActionListener(e -> {
+            dispose();
+            new LoginGUI().setVisible(true);
+        });
+    }
+
+    private void handleSignup() {
+        String user = usernameField.getText().trim();
+        String pass = new String(passwordField.getPassword());
+
+        if (user.isEmpty() || pass.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Fill all fields.");
+            return;
+        }
+
+        saveAccount(user, pass);
+        JOptionPane.showMessageDialog(this, "Account created!");
+
+        dispose();
+        new LoginGUI().setVisible(true);
+    }
+
+    private void saveAccount(String u, String p) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter("accounts.txt", true))) {
+            pw.println(u + "," + p);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error saving account!");
+        }
+    }
+}
