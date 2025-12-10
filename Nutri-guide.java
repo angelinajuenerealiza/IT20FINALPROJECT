@@ -202,3 +202,83 @@ class SignupGUI extends JFrame {
     }
 }
 
+/* =============================================================
+                        DASHBOARD GUI
+   ============================================================= */
+class DashboardGUI extends JFrame {
+
+    private PlannerLogic plannerLogic = new PlannerLogic();
+
+    public DashboardGUI() {
+        setTitle("NutriGuide Dashboard");
+        setSize(500, 400);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new GridLayout(4, 1, 10, 10));
+
+        JLabel title = new JLabel("Welcome to NutriGuide!", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 26));
+        add(title);
+
+        JButton plannerBtn = new JButton("Meal Planner");
+        JButton dsaBtn = new JButton("DSA: Sorting, Searching & Classification");
+        JButton logoutBtn = new JButton("Logout");
+
+        plannerBtn.addActionListener(e -> new PlannerGUI(plannerLogic).setVisible(true));
+
+        dsaBtn.addActionListener(e -> new DSAModuleGUI(plannerLogic).setVisible(true));
+
+        logoutBtn.addActionListener(e -> {
+            dispose();
+            new LoginGUI().setVisible(true);
+        });
+
+        add(plannerBtn);
+        add(dsaBtn);
+        add(logoutBtn);
+    }
+}
+
+/* =============================================================
+                        FOOD ITEM CLASS
+   ============================================================= */
+class FoodItem {
+    String name;
+    double calories;
+
+    FoodItem(String name, double calories) {
+        this.name = name;
+        this.calories = calories;
+    }
+}
+
+/* =============================================================
+                        PLANNER LOGIC
+   ============================================================= */
+class PlannerLogic {
+
+    ArrayList<FoodItem> foodLibrary = new ArrayList<>();
+
+    public PlannerLogic() {
+        loadDefaultFoods();
+    }
+
+    private void loadDefaultFoods() {
+        foodLibrary.add(new FoodItem("Apple", 95));
+        foodLibrary.add(new FoodItem("Banana", 105));
+        foodLibrary.add(new FoodItem("Chicken Breast", 165));
+        foodLibrary.add(new FoodItem("Egg", 78));
+        foodLibrary.add(new FoodItem("Rice (1 cup)", 206));
+        foodLibrary.add(new FoodItem("Milk (1 cup)", 149));
+        foodLibrary.add(new FoodItem("Bread Slice", 66));
+        foodLibrary.add(new FoodItem("Orange", 62));
+    }
+
+    public void addCustomFood(String name, double calories) {
+        foodLibrary.add(new FoodItem(name, calories));
+    }
+
+    public ArrayList<FoodItem> getFoodLibrary() {
+        return foodLibrary;
+    }
+}
